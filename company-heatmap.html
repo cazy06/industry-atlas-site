@@ -76,6 +76,38 @@
       white-space: nowrap;
     }
 
+    .header-actions {
+      display: grid;
+      gap: 8px;
+      justify-items: end;
+    }
+
+    .lang-toggle {
+      display: flex;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #f8fafb;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .lang-toggle button {
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: #4b5862;
+      min-width: 44px;
+      padding: 6px 9px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .lang-toggle button.active {
+      background: #151a1f;
+      color: #fff;
+    }
+
     .pulse {
       width: 9px;
       height: 9px;
@@ -824,9 +856,15 @@
       <div class="head">
         <div>
           <h1>Weekly Global Company Heatmap</h1>
-          <p class="sub">世界の主要企業Top 100を「面積＝概算時価総額」「色＝1週間騰落率」で見る週次スナップショット。即時性よりも、世界市場の大まかな流れを把握するための画面です。</p>
+          <p class="sub" id="pageSubtitle">世界の主要企業Top 100を「面積＝概算時価総額」「色＝1週間騰落率」で見る週次スナップショット。即時性よりも、世界市場の大まかな流れを把握するための画面です。</p>
         </div>
-        <div class="status"><span class="pulse"></span><span id="statusText">Weekly snapshot</span></div>
+        <div class="header-actions">
+          <div class="lang-toggle" id="languageButtons" aria-label="Language">
+            <button class="active" data-lang="ja">JA</button>
+            <button data-lang="en">EN</button>
+          </div>
+          <div class="status"><span class="pulse"></span><span id="statusText">Weekly snapshot</span></div>
+        </div>
       </div>
     </header>
 
@@ -834,7 +872,7 @@
       <aside class="panel filters">
         <details>
           <summary>
-            <span class="summary-title">Market Filters</span>
+            <span class="summary-title" data-i18n="marketFilters">Market Filters</span>
             <span class="summary-chips">
               <span class="summary-chip" id="summaryMarket">Top 100</span>
               <span class="summary-chip" id="summarySector">All Sectors</span>
@@ -845,25 +883,25 @@
           </summary>
           <div class="filter-content">
             <section>
-              <h2>Display</h2>
+              <h2 data-i18n="display">Display</h2>
               <div class="segmented" id="marketButtons"></div>
               <div class="field">
-                <label for="searchInput">検索</label>
+                <label for="searchInput" data-i18n="searchLabel">検索</label>
                 <input id="searchInput" type="search" placeholder="企業名・ティッカー・業種">
               </div>
               <button class="primary secondary" id="clearFiltersButton">Clear Filters</button>
             </section>
             <section>
-              <h2>Sectors</h2>
+              <h2 data-i18n="sectors">Sectors</h2>
               <div class="sector-list" id="sectorButtons"></div>
             </section>
             <section class="filter-metrics">
-              <h2>Snapshot</h2>
+              <h2 data-i18n="snapshot">Snapshot</h2>
               <div class="mini-metrics">
-                <div class="mini"><strong id="companyCount">0</strong><span>企業数</span></div>
-                <div class="mini"><strong id="totalCap">$0T</strong><span>時価総額</span></div>
-                <div class="mini"><strong id="avgChange">0%</strong><span>平均騰落</span></div>
-                <div class="mini"><strong id="gainRatio">0%</strong><span>上昇比率</span></div>
+                <div class="mini"><strong id="companyCount">0</strong><span data-i18n="companies">企業数</span></div>
+                <div class="mini"><strong id="totalCap">$0T</strong><span data-i18n="marketCap">時価総額</span></div>
+                <div class="mini"><strong id="avgChange">0%</strong><span data-i18n="avgChange">平均騰落</span></div>
+                <div class="mini"><strong id="gainRatio">0%</strong><span data-i18n="gainRatio">上昇比率</span></div>
               </div>
             </section>
           </div>
@@ -877,7 +915,7 @@
             <span>-5%</span>
             <span class="scale"></span>
             <span>+5%</span>
-            <span>面積: 概算時価総額</span>
+            <span data-i18n="areaLegend">面積: 概算時価総額</span>
           </div>
         </div>
         <div id="heatmap" aria-label="企業ヒートマップ"></div>
@@ -889,11 +927,11 @@
         <div class="source-note">
           <h2>Weekly Update</h2>
           <div class="mini-metrics">
-            <div class="mini"><strong>2026/05/12</strong><span>最終更新</span></div>
-            <div class="mini"><strong>2026/05/19</strong><span>次回予定</span></div>
+            <div class="mini"><strong>2026/05/12</strong><span data-i18n="lastUpdated">最終更新</span></div>
+            <div class="mini"><strong>2026/05/19</strong><span data-i18n="nextUpdate">次回予定</span></div>
           </div>
           <div class="field">
-            <label for="providerSelect">更新データ</label>
+            <label for="providerSelect" data-i18n="updateData">更新データ</label>
             <select id="providerSelect">
               <option value="demo">Local weekly snapshot</option>
               <option value="finnhub">Finnhub</option>
@@ -905,7 +943,7 @@
             <input id="apiKeyInput" type="password" placeholder="ローカル検証用">
           </div>
           <button class="primary" id="refreshButton">
-            <span>Simulate Weekly Refresh</span>
+            <span data-i18n="simulateRefresh">Simulate Weekly Refresh</span>
           </button>
           <p class="api-result" id="apiResult">本番では週1回の更新処理でAPIから取得し、画面は保存済みJSONを読み込みます。</p>
           <p class="note">無料枠で運用する場合は、Top 100を数回に分けて取得し、週次で `market-data.json` を更新する設計が現実的です。</p>
@@ -1044,26 +1082,50 @@
     };
 
     const companyDescriptions = {
-      "AAPL": "iPhone、Mac、Apple Watchなどの端末、App Store、Apple Music、iCloudなどのサービスを展開する消費者向けテクノロジー企業。",
-      "MSFT": "Windows、Microsoft 365、Azure、GitHub、LinkedIn、ゲーム事業を持つクラウド・ソフトウェア企業。",
-      "NVDA": "AI計算、GPU、データセンター向け半導体、開発基盤を提供する半導体企業。",
-      "GOOGL": "検索、広告、YouTube、Android、Google Cloudを中心に事業を展開するインターネット企業。",
-      "AMZN": "EC、物流、クラウドのAWS、広告、動画配信などを展開する世界的なプラットフォーム企業。",
-      "META": "Facebook、Instagram、WhatsApp、広告、AI、VR/AR関連事業を展開するソーシャルプラットフォーム企業。",
-      "TSLA": "電気自動車、蓄電池、太陽光、充電網、自動運転関連技術を展開するモビリティ企業。",
-      "TM": "トヨタ、レクサスなどの自動車、ハイブリッド、EV、金融サービスを世界展開する自動車メーカー。",
-      "TSM": "世界最大級の半導体受託製造会社で、先端プロセスの製造を多くの半導体企業に提供する。",
-      "JPM": "投資銀行、商業銀行、資産運用、決済などを展開する米国最大級の総合金融グループ。",
-      "LLY": "糖尿病、肥満症、がん、免疫疾患などの医薬品を開発・販売する製薬会社。",
-      "XOM": "石油・天然ガスの探鉱、生産、精製、化学品を世界展開するエネルギー企業。",
-      "WMT": "大型小売店舗、食品、日用品、EC、会員サービスを展開する世界最大級の小売企業。",
-      "BRK.B": "保険、鉄道、エネルギー、製造、小売、投資ポートフォリオを持つ投資持株会社。",
-      "V": "クレジットカード・デビットカード決済ネットワークを運営するグローバル決済企業。",
-      "NVO": "糖尿病、肥満症、ホルモン関連領域に強みを持つデンマークの製薬会社。",
-      "NFLX": "映画、ドラマ、ドキュメンタリー、アニメなどを配信する世界的な動画ストリーミング企業。",
-      "TCEHY": "SNS、ゲーム、決済、クラウド、広告、投資を展開する中国のインターネット企業。",
-      "COST": "会員制倉庫型店舗を中心に食品、日用品、家電などを低価格で販売する小売企業。",
-      "ASML": "半導体製造に不可欠な露光装置、特にEUV装置で高いシェアを持つ装置メーカー。"
+      ja: {
+        "AAPL": "iPhone、Mac、Apple Watchなどの端末、App Store、Apple Music、iCloudなどのサービスを展開する消費者向けテクノロジー企業。",
+        "MSFT": "Windows、Microsoft 365、Azure、GitHub、LinkedIn、ゲーム事業を持つクラウド・ソフトウェア企業。",
+        "NVDA": "AI計算、GPU、データセンター向け半導体、開発基盤を提供する半導体企業。",
+        "GOOGL": "検索、広告、YouTube、Android、Google Cloudを中心に事業を展開するインターネット企業。",
+        "AMZN": "EC、物流、クラウドのAWS、広告、動画配信などを展開する世界的なプラットフォーム企業。",
+        "META": "Facebook、Instagram、WhatsApp、広告、AI、VR/AR関連事業を展開するソーシャルプラットフォーム企業。",
+        "TSLA": "電気自動車、蓄電池、太陽光、充電網、自動運転関連技術を展開するモビリティ企業。",
+        "TM": "トヨタ、レクサスなどの自動車、ハイブリッド、EV、金融サービスを世界展開する自動車メーカー。",
+        "TSM": "世界最大級の半導体受託製造会社で、先端プロセスの製造を多くの半導体企業に提供する。",
+        "JPM": "投資銀行、商業銀行、資産運用、決済などを展開する米国最大級の総合金融グループ。",
+        "LLY": "糖尿病、肥満症、がん、免疫疾患などの医薬品を開発・販売する製薬会社。",
+        "XOM": "石油・天然ガスの探鉱、生産、精製、化学品を世界展開するエネルギー企業。",
+        "WMT": "大型小売店舗、食品、日用品、EC、会員サービスを展開する世界最大級の小売企業。",
+        "BRK.B": "保険、鉄道、エネルギー、製造、小売、投資ポートフォリオを持つ投資持株会社。",
+        "V": "クレジットカード・デビットカード決済ネットワークを運営するグローバル決済企業。",
+        "NVO": "糖尿病、肥満症、ホルモン関連領域に強みを持つデンマークの製薬会社。",
+        "NFLX": "映画、ドラマ、ドキュメンタリー、アニメなどを配信する世界的な動画ストリーミング企業。",
+        "TCEHY": "SNS、ゲーム、決済、クラウド、広告、投資を展開する中国のインターネット企業。",
+        "COST": "会員制倉庫型店舗を中心に食品、日用品、家電などを低価格で販売する小売企業。",
+        "ASML": "半導体製造に不可欠な露光装置、特にEUV装置で高いシェアを持つ装置メーカー。"
+      },
+      en: {
+        "AAPL": "Apple sells consumer devices such as iPhone, Mac, and Apple Watch, alongside services including the App Store, Apple Music, and iCloud.",
+        "MSFT": "Microsoft provides Windows, Microsoft 365, Azure cloud services, GitHub, LinkedIn, and gaming products.",
+        "NVDA": "NVIDIA designs GPUs, AI computing platforms, and data center semiconductor systems.",
+        "GOOGL": "Alphabet operates Google Search, advertising, YouTube, Android, and Google Cloud.",
+        "AMZN": "Amazon operates e-commerce, logistics, AWS cloud services, advertising, and digital media businesses.",
+        "META": "Meta operates Facebook, Instagram, WhatsApp, advertising systems, AI products, and VR/AR initiatives.",
+        "TSLA": "Tesla produces electric vehicles, batteries, solar products, charging infrastructure, and autonomous driving technology.",
+        "TM": "Toyota manufactures Toyota and Lexus vehicles globally, including hybrid, electric, and financial service businesses.",
+        "TSM": "TSMC is a leading semiconductor foundry that manufactures advanced chips for global chip designers.",
+        "JPM": "JPMorgan Chase provides investment banking, commercial banking, asset management, and payments services.",
+        "LLY": "Eli Lilly develops and sells medicines for diabetes, obesity, oncology, immunology, and related therapeutic areas.",
+        "XOM": "ExxonMobil explores, produces, refines, and markets oil, natural gas, fuels, and chemical products.",
+        "WMT": "Walmart operates large-format retail, grocery, e-commerce, logistics, and membership services.",
+        "BRK.B": "Berkshire Hathaway is a holding company with insurance, rail, energy, manufacturing, retail, and investment operations.",
+        "V": "Visa operates a global payments network for credit, debit, and digital transactions.",
+        "NVO": "Novo Nordisk develops medicines for diabetes, obesity, and hormone-related therapeutic areas.",
+        "NFLX": "Netflix provides global streaming entertainment including films, series, documentaries, and animation.",
+        "TCEHY": "Tencent operates social platforms, games, payments, cloud services, advertising, and investment businesses.",
+        "COST": "Costco operates membership warehouse stores that sell groceries, household goods, electronics, and other products.",
+        "ASML": "ASML makes semiconductor lithography equipment, including EUV systems used in advanced chip manufacturing."
+      }
     };
 
     const markets = [
@@ -1074,6 +1136,7 @@
     ];
 
     let state = {
+      lang: "ja",
       market: "world",
       sector: "all",
       query: "",
@@ -1093,6 +1156,113 @@
     const apiResult = document.getElementById("apiResult");
     const companyModal = document.getElementById("companyModal");
     const modalContent = document.getElementById("modalContent");
+    const languageButtons = document.getElementById("languageButtons");
+
+    const i18n = {
+      ja: {
+        subtitle: "世界の主要企業Top 100を「面積＝概算時価総額」「色＝1週間騰落率」で見る週次スナップショット。即時性よりも、世界市場の大まかな流れを把握するための画面です。",
+        weeklySnapshot: "Weekly snapshot",
+        refreshed: "Weekly snapshot refreshed",
+        apiReady: "API ready",
+        marketFilters: "Market Filters",
+        display: "Display",
+        searchLabel: "検索",
+        searchPlaceholder: "企業名・ティッカー・業種",
+        sectors: "Sectors",
+        snapshot: "Snapshot",
+        companies: "企業数",
+        marketCap: "時価総額",
+        avgChange: "平均騰落",
+        gainRatio: "上昇比率",
+        allSectors: "All Sectors",
+        updated: "Updated",
+        areaLegend: "面積: 概算時価総額",
+        noCompanies: "該当する企業がありません。",
+        noData: "条件に合う企業がありません。",
+        lastUpdated: "最終更新",
+        nextUpdate: "次回予定",
+        updateData: "更新データ",
+        simulateRefresh: "Simulate Weekly Refresh",
+        apiNote: "本番では週1回の更新処理でAPIから取得し、画面は保存済みJSONを読み込みます。",
+        freeNote: "無料枠で運用する場合は、Top 100を数回に分けて取得し、週次で `market-data.json` を更新する設計が現実的です。",
+        weeklyChange: "1週間騰落率",
+        estimatedMarketCap: "概算時価総額",
+        estimatedPrice: "推定価格",
+        companyName: "企業名",
+        ticker: "ティッカー",
+        region: "地域",
+        sector: "業種",
+        update: "更新",
+        largestMover: "largest mover",
+        detailNote: "タイルの面積は概算時価総額、色は直近1週間の騰落率です。週次更新では終値ベースのデータを保存し、前週比として表示します。",
+        modalNote: "この詳細は週次スナップショットの表示です。面積は概算時価総額、色は直近1週間の騰落率を表します。",
+        sponsored: "Sponsored insight slot",
+        sideAd: "将来的に、業種・地域・選択企業に連動した広告、レポート、証券口座、ETF、調査資料などをここに表示できます。",
+        modalAd: "将来的に、選択企業・業種・地域に連動する広告、調査資料、ETF、証券口座、B2Bサービスを表示できます。",
+        companyDetail: "Company Detail",
+        relatedOpportunity: "Related Opportunity",
+        close: "閉じる",
+        refreshDemo: "週次更新の見え方をシミュレーションしました。",
+        keyRequired: "APIキーを入力してください。",
+        loadingProvider: provider => `${provider} から取得中...`,
+        updatedProvider: count => `${count}銘柄を更新しました。無料枠では週次ローテーション取得が前提になります。`,
+        unavailable: ticker => `${ticker} のデータを取得できませんでした`
+      },
+      en: {
+        subtitle: "A weekly snapshot of the world's top 100 companies where area represents estimated market cap and color represents one-week performance. It is designed to show broad global market movement rather than real-time trading.",
+        weeklySnapshot: "Weekly snapshot",
+        refreshed: "Weekly snapshot refreshed",
+        apiReady: "API ready",
+        marketFilters: "Market Filters",
+        display: "Display",
+        searchLabel: "Search",
+        searchPlaceholder: "Company, ticker, or sector",
+        sectors: "Sectors",
+        snapshot: "Snapshot",
+        companies: "Companies",
+        marketCap: "Market cap",
+        avgChange: "Avg. change",
+        gainRatio: "Gainers",
+        allSectors: "All Sectors",
+        updated: "Updated",
+        areaLegend: "Area: estimated market cap",
+        noCompanies: "No companies match the current filters.",
+        noData: "No matching companies.",
+        lastUpdated: "Last updated",
+        nextUpdate: "Next update",
+        updateData: "Update source",
+        simulateRefresh: "Simulate Weekly Refresh",
+        apiNote: "In production, a weekly job would fetch API data and the page would read the saved JSON snapshot.",
+        freeNote: "For a free-tier setup, the practical approach is to rotate through the Top 100 and update `market-data.json` weekly.",
+        weeklyChange: "1-week change",
+        estimatedMarketCap: "Est. market cap",
+        estimatedPrice: "Est. price",
+        companyName: "Company",
+        ticker: "Ticker",
+        region: "Region",
+        sector: "Sector",
+        update: "Updated",
+        largestMover: "largest mover",
+        detailNote: "Tile area represents estimated market cap, and color represents one-week performance based on weekly close data.",
+        modalNote: "This detail is part of the weekly snapshot. Area represents estimated market cap, and color represents one-week performance.",
+        sponsored: "Sponsored insight slot",
+        sideAd: "Future placements can show ads, reports, brokerage offers, ETFs, or research materials linked to the selected sector, region, or company.",
+        modalAd: "Future placements can show ads, research, ETFs, brokerage offers, or B2B services tied to the selected company, sector, and region.",
+        companyDetail: "Company Detail",
+        relatedOpportunity: "Related Opportunity",
+        close: "Close",
+        refreshDemo: "Simulated a weekly refresh.",
+        keyRequired: "Please enter an API key.",
+        loadingProvider: provider => `Fetching data from ${provider}...`,
+        updatedProvider: count => `Updated ${count} tickers. Free-tier use assumes weekly rotation.`,
+        unavailable: ticker => `${ticker} data unavailable`
+      }
+    };
+
+    function t(key, ...args) {
+      const value = i18n[state.lang][key] ?? i18n.en[key] ?? key;
+      return typeof value === "function" ? value(...args) : value;
+    }
 
     function filteredCompanies() {
       const market = markets.find(item => item.id === state.market);
@@ -1206,6 +1376,18 @@
     }
 
     function renderControls() {
+      document.documentElement.lang = state.lang;
+      document.getElementById("pageSubtitle").textContent = t("subtitle");
+      document.getElementById("searchInput").placeholder = t("searchPlaceholder");
+      document.querySelectorAll("[data-i18n]").forEach(node => {
+        node.textContent = t(node.dataset.i18n);
+      });
+      document.getElementById("apiResult").textContent = t("apiNote");
+      document.querySelector(".source-note .note").textContent = t("freeNote");
+      languageButtons.querySelectorAll("button").forEach(button => {
+        button.classList.toggle("active", button.dataset.lang === state.lang);
+      });
+
       marketButtons.innerHTML = markets.map(market => `
         <button class="${state.market === market.id ? "active" : ""}" data-market="${market.id}">${market.label}</button>
       `).join("");
@@ -1214,7 +1396,7 @@
       const sectors = [...new Set(state.data.map(item => item.sector))].sort();
       sectorButtons.innerHTML = `
         <button class="sector-button ${state.sector === "all" ? "active" : ""}" data-sector="all">
-          <span class="sector-label"><span class="dot" style="background:#151a1f"></span><span>All Sectors</span></span>
+          <span class="sector-label"><span class="dot" style="background:#151a1f"></span><span>${t("allSectors")}</span></span>
           <span>${current.length}</span>
         </button>
         ${sectors.map(sector => {
@@ -1254,7 +1436,7 @@
       document.getElementById("mapTitle").textContent = `${markets.find(m => m.id === state.market).label} Weekly Snapshot`;
 
       if (!items.length) {
-        heatmap.innerHTML = `<div style="color:#d8e0e6;padding:24px">該当する企業がありません。</div>`;
+        heatmap.innerHTML = `<div style="color:#d8e0e6;padding:24px">${t("noCompanies")}</div>`;
         return;
       }
 
@@ -1349,36 +1531,36 @@
       document.getElementById("avgChange").className = avg >= 0 ? "gain" : "loss";
       document.getElementById("gainRatio").textContent = `${gain.toFixed(0)}%`;
       document.getElementById("summaryMarket").textContent = market.label;
-      document.getElementById("summarySector").textContent = state.sector === "all" ? "All Sectors" : state.sector;
-      document.getElementById("summaryCount").textContent = `${items.length} companies`;
-      document.getElementById("summaryUpdated").textContent = `Updated ${formatDate(snapshotDate)}`;
+      document.getElementById("summarySector").textContent = state.sector === "all" ? t("allSectors") : state.sector;
+      document.getElementById("summaryCount").textContent = state.lang === "ja" ? `${items.length}社` : `${items.length} companies`;
+      document.getElementById("summaryUpdated").textContent = `${t("updated")} ${formatDate(snapshotDate)}`;
     }
 
     function renderDetail() {
       const item = state.selected || filteredCompanies().sort((a, b) => Math.abs(b.change) - Math.abs(a.change))[0];
       if (!item) {
-        detailPanel.innerHTML = `<div class="detail-hero"><h2>No data</h2><p>条件に合う企業がありません。</p></div>`;
+        detailPanel.innerHTML = `<div class="detail-hero"><h2>No data</h2><p>${t("noData")}</p></div>`;
         return;
       }
       detailPanel.innerHTML = `
         <div class="detail-hero" style="background:linear-gradient(135deg,${colorForChange(item.change)},#20282f)">
           <h2>${item.ticker}</h2>
-          <p>${item.name} / ${item.sector}${state.selected ? "" : " / largest mover"}</p>
+          <p>${item.name} / ${item.sector}${state.selected ? "" : ` / ${t("largestMover")}`}</p>
         </div>
         <div class="rows">
-          <div class="row"><span>企業名</span><strong>${item.name}</strong></div>
-          <div class="row"><span>1週間騰落率</span><strong class="${item.change >= 0 ? "gain" : "loss"}">${formatChange(item.change)}</strong></div>
-          <div class="row"><span>概算時価総額</span><strong>${formatCap(item.marketCap)}</strong></div>
-          <div class="row"><span>推定価格</span><strong>$${item.price.toFixed(2)}</strong></div>
-          <div class="row"><span>地域</span><strong>${item.region}</strong></div>
-          <div class="row"><span>業種</span><strong>${item.sector}</strong></div>
-          <div class="row"><span>更新</span><strong>${formatDate(item.updatedAt)}</strong></div>
+          <div class="row"><span>${t("companyName")}</span><strong>${item.name}</strong></div>
+          <div class="row"><span>${t("weeklyChange")}</span><strong class="${item.change >= 0 ? "gain" : "loss"}">${formatChange(item.change)}</strong></div>
+          <div class="row"><span>${t("estimatedMarketCap")}</span><strong>${formatCap(item.marketCap)}</strong></div>
+          <div class="row"><span>${t("estimatedPrice")}</span><strong>$${item.price.toFixed(2)}</strong></div>
+          <div class="row"><span>${t("region")}</span><strong>${item.region}</strong></div>
+          <div class="row"><span>${t("sector")}</span><strong>${item.sector}</strong></div>
+          <div class="row"><span>${t("update")}</span><strong>${formatDate(item.updatedAt)}</strong></div>
         </div>
-        <p class="note">タイルの面積は概算時価総額、色は直近1週間の騰落率です。週次更新では終値ベースのデータを保存し、前週比として表示します。</p>
+        <p class="note">${t("detailNote")}</p>
         <div class="ad-slot">
-          <strong>Sponsored insight slot</strong>
+          <strong>${t("sponsored")}</strong>
           <span>${adSuggestion(item)}</span>
-          <span>将来的に、業種・地域・選択企業に連動した広告、レポート、証券口座、ETF、調査資料などをここに表示できます。</span>
+          <span>${t("sideAd")}</span>
         </div>
       `;
     }
@@ -1402,35 +1584,35 @@
             <h2 id="modalTitle">${item.ticker}</h2>
             <p>${item.name} / ${item.sector} / ${item.region}</p>
           </div>
-          <button class="modal-close" id="modalCloseButton" aria-label="閉じる">×</button>
+          <button class="modal-close" id="modalCloseButton" aria-label="${t("close")}">×</button>
         </header>
         <div class="modal-body">
           <section>
             <div class="modal-kpis">
-              <div class="modal-kpi"><strong class="${item.change >= 0 ? "gain" : "loss"}">${formatChange(item.change)}</strong><span>1週間騰落率</span></div>
-              <div class="modal-kpi"><strong>${formatCap(item.marketCap)}</strong><span>概算時価総額</span></div>
-              <div class="modal-kpi"><strong>$${item.price.toFixed(2)}</strong><span>推定価格</span></div>
+              <div class="modal-kpi"><strong class="${item.change >= 0 ? "gain" : "loss"}">${formatChange(item.change)}</strong><span>${t("weeklyChange")}</span></div>
+              <div class="modal-kpi"><strong>${formatCap(item.marketCap)}</strong><span>${t("estimatedMarketCap")}</span></div>
+              <div class="modal-kpi"><strong>$${item.price.toFixed(2)}</strong><span>${t("estimatedPrice")}</span></div>
             </div>
             <div class="modal-section">
-              <h3>Company Detail</h3>
+              <h3>${t("companyDetail")}</h3>
               <p class="note" style="margin:0 0 12px">${companyOverview(item)}</p>
               <div class="rows">
-                <div class="row"><span>企業名</span><strong>${item.name}</strong></div>
-                <div class="row"><span>ティッカー</span><strong>${item.ticker}</strong></div>
-                <div class="row"><span>地域</span><strong>${item.region}</strong></div>
-                <div class="row"><span>業種</span><strong>${item.sector}</strong></div>
-                <div class="row"><span>更新</span><strong>${formatDate(item.updatedAt)}</strong></div>
+                <div class="row"><span>${t("companyName")}</span><strong>${item.name}</strong></div>
+                <div class="row"><span>${t("ticker")}</span><strong>${item.ticker}</strong></div>
+                <div class="row"><span>${t("region")}</span><strong>${item.region}</strong></div>
+                <div class="row"><span>${t("sector")}</span><strong>${item.sector}</strong></div>
+                <div class="row"><span>${t("update")}</span><strong>${formatDate(item.updatedAt)}</strong></div>
               </div>
-              <p class="note">この詳細は週次スナップショットの表示です。面積は概算時価総額、色は直近1週間の騰落率を表します。</p>
+              <p class="note">${t("modalNote")}</p>
             </div>
           </section>
           <aside>
             <div class="modal-section">
-              <h3>Related Opportunity</h3>
+              <h3>${t("relatedOpportunity")}</h3>
               <div class="ad-slot" style="margin-top:0">
-                <strong>Sponsored insight slot</strong>
+                <strong>${t("sponsored")}</strong>
                 <span>${adSuggestion(item)}</span>
-                <span>将来的に、選択企業・業種・地域に連動する広告、調査資料、ETF、証券口座、B2Bサービスを表示できます。</span>
+                <span>${t("modalAd")}</span>
               </div>
             </div>
           </aside>
@@ -1472,37 +1654,67 @@
 
     function adSuggestion(item) {
       const suggestions = {
-        Technology: "候補: クラウド、AI、半導体、開発者向けSaaS、テックETF。",
-        Finance: "候補: 証券口座、法人決済、資産運用、金融ニュース、銀行API。",
-        Healthcare: "候補: 医療調査レポート、ヘルスケアETF、創薬・医療機器関連サービス。",
-        Energy: "候補: エネルギー市場レポート、再エネ投資、資源価格データ。",
-        Consumer: "候補: 小売分析、ブランド調査、EC支援、消費財レポート。",
-        Mobility: "候補: EV、モビリティ調査、自動車サプライチェーン、保険。",
-        Industrial: "候補: 製造DX、物流、産業オートメーション、B2B調達。",
-        Materials: "候補: 素材市況、化学品データ、資源・建材レポート。",
-        Communication: "候補: 通信、広告、動画配信、ゲーム市場レポート。",
-        "Real Estate": "候補: REIT、不動産投資、データセンター、都市開発レポート。",
-        Agriculture: "候補: 食料・農業市場、穀物市況、農業機械、サプライチェーン分析。"
+        ja: {
+          Technology: "候補: クラウド、AI、半導体、開発者向けSaaS、テックETF。",
+          Finance: "候補: 証券口座、法人決済、資産運用、金融ニュース、銀行API。",
+          Healthcare: "候補: 医療調査レポート、ヘルスケアETF、創薬・医療機器関連サービス。",
+          Energy: "候補: エネルギー市場レポート、再エネ投資、資源価格データ。",
+          Consumer: "候補: 小売分析、ブランド調査、EC支援、消費財レポート。",
+          Mobility: "候補: EV、モビリティ調査、自動車サプライチェーン、保険。",
+          Industrial: "候補: 製造DX、物流、産業オートメーション、B2B調達。",
+          Materials: "候補: 素材市況、化学品データ、資源・建材レポート。",
+          Communication: "候補: 通信、広告、動画配信、ゲーム市場レポート。",
+          "Real Estate": "候補: REIT、不動産投資、データセンター、都市開発レポート。",
+          Agriculture: "候補: 食料・農業市場、穀物市況、農業機械、サプライチェーン分析。"
+        },
+        en: {
+          Technology: "Candidates: cloud, AI, semiconductors, developer SaaS, and technology ETFs.",
+          Finance: "Candidates: brokerage accounts, payments, wealth management, financial news, and banking APIs.",
+          Healthcare: "Candidates: healthcare research, healthcare ETFs, biotech, pharma, and medical device services.",
+          Energy: "Candidates: energy market research, renewable investing, and commodity data.",
+          Consumer: "Candidates: retail analytics, brand research, e-commerce tools, and consumer goods reports.",
+          Mobility: "Candidates: EVs, mobility research, auto supply chain services, and insurance.",
+          Industrial: "Candidates: manufacturing software, logistics, industrial automation, and B2B procurement.",
+          Materials: "Candidates: materials pricing, chemicals data, resources, and construction reports.",
+          Communication: "Candidates: telecom, advertising, streaming, and gaming market reports.",
+          "Real Estate": "Candidates: REITs, real estate investing, data centers, and urban development research.",
+          Agriculture: "Candidates: food and agriculture markets, grain prices, farm equipment, and supply chain analytics."
+        }
       };
-      return suggestions[item.sector] || "候補: 関連業界レポート、投資情報、B2Bサービス。";
+      return suggestions[state.lang][item.sector] || (state.lang === "ja" ? "候補: 関連業界レポート、投資情報、B2Bサービス。" : "Candidates: related industry reports, investment information, and B2B services.");
     }
 
     function companyOverview(item) {
-      if (companyDescriptions[item.ticker]) return companyDescriptions[item.ticker];
+      if (companyDescriptions[state.lang][item.ticker]) return companyDescriptions[state.lang][item.ticker];
       const sectorOverview = {
-        Technology: `${item.name}は、ソフトウェア、半導体、クラウド、デジタル基盤などの領域で事業を行うテクノロジー企業です。`,
-        Finance: `${item.name}は、銀行、決済、保険、資産運用など金融サービス領域で事業を展開する企業です。`,
-        Healthcare: `${item.name}は、医薬品、医療機器、ヘルスケアサービスなど健康・医療領域に関わる企業です。`,
-        Energy: `${item.name}は、石油、天然ガス、電力、再生可能エネルギーなどエネルギー関連事業を展開する企業です。`,
-        Consumer: `${item.name}は、小売、食品、飲料、衣料、生活用品など消費者向け市場で事業を展開する企業です。`,
-        Mobility: `${item.name}は、自動車、EV、部品、移動サービスなどモビリティ領域で事業を行う企業です。`,
-        Industrial: `${item.name}は、機械、航空、物流、製造設備など産業向け製品・サービスを提供する企業です。`,
-        Materials: `${item.name}は、金属、化学品、素材、建材など製造業やインフラの基礎となる製品を扱う企業です。`,
-        Communication: `${item.name}は、通信、メディア、コンテンツ、広告、ゲームなど情報流通に関わる事業を展開する企業です。`,
-        "Real Estate": `${item.name}は、不動産、REIT、物流施設、データセンター、都市インフラなどに関わる企業です。`,
-        Agriculture: `${item.name}は、農業、食品、穀物、農業機械、食料サプライチェーンに関わる企業です。`
+        ja: {
+          Technology: `${item.name}は、ソフトウェア、半導体、クラウド、デジタル基盤などの領域で事業を行うテクノロジー企業です。`,
+          Finance: `${item.name}は、銀行、決済、保険、資産運用など金融サービス領域で事業を展開する企業です。`,
+          Healthcare: `${item.name}は、医薬品、医療機器、ヘルスケアサービスなど健康・医療領域に関わる企業です。`,
+          Energy: `${item.name}は、石油、天然ガス、電力、再生可能エネルギーなどエネルギー関連事業を展開する企業です。`,
+          Consumer: `${item.name}は、小売、食品、飲料、衣料、生活用品など消費者向け市場で事業を展開する企業です。`,
+          Mobility: `${item.name}は、自動車、EV、部品、移動サービスなどモビリティ領域で事業を行う企業です。`,
+          Industrial: `${item.name}は、機械、航空、物流、製造設備など産業向け製品・サービスを提供する企業です。`,
+          Materials: `${item.name}は、金属、化学品、素材、建材など製造業やインフラの基礎となる製品を扱う企業です。`,
+          Communication: `${item.name}は、通信、メディア、コンテンツ、広告、ゲームなど情報流通に関わる事業を展開する企業です。`,
+          "Real Estate": `${item.name}は、不動産、REIT、物流施設、データセンター、都市インフラなどに関わる企業です。`,
+          Agriculture: `${item.name}は、農業、食品、穀物、農業機械、食料サプライチェーンに関わる企業です。`
+        },
+        en: {
+          Technology: `${item.name} operates in technology markets such as software, semiconductors, cloud, and digital infrastructure.`,
+          Finance: `${item.name} operates in financial services such as banking, payments, insurance, or asset management.`,
+          Healthcare: `${item.name} operates in healthcare markets such as pharmaceuticals, medical devices, or health services.`,
+          Energy: `${item.name} operates in energy markets such as oil, natural gas, power, or renewable energy.`,
+          Consumer: `${item.name} serves consumer markets such as retail, food, beverages, apparel, or household goods.`,
+          Mobility: `${item.name} operates in mobility markets such as autos, EVs, components, or transport services.`,
+          Industrial: `${item.name} provides industrial products or services such as machinery, aerospace, logistics, or factory systems.`,
+          Materials: `${item.name} supplies materials such as metals, chemicals, construction inputs, or other industrial basics.`,
+          Communication: `${item.name} operates in communications, media, content, advertising, or gaming markets.`,
+          "Real Estate": `${item.name} operates in real estate, REITs, logistics facilities, data centers, or urban infrastructure.`,
+          Agriculture: `${item.name} operates in agriculture, food, grain, farm equipment, or food supply chains.`
+        }
       };
-      return sectorOverview[item.sector] || `${item.name}は、${item.sector}領域で事業を展開する企業です。`;
+      return sectorOverview[state.lang][item.sector] || (state.lang === "ja" ? `${item.name}は、${item.sector}領域で事業を展開する企業です。` : `${item.name} operates in the ${item.sector} sector.`);
     }
 
     function tickDemo() {
@@ -1518,7 +1730,7 @@
           updatedAt: new Date().toISOString()
         };
       });
-      document.getElementById("statusText").textContent = "Weekly snapshot refreshed";
+      document.getElementById("statusText").textContent = t("refreshed");
       render();
     }
 
@@ -1526,17 +1738,17 @@
       const provider = providerSelect.value;
       const key = apiKeyInput.value.trim();
       if (provider === "demo") {
-        apiResult.textContent = "週次更新の見え方をシミュレーションしました。";
+        apiResult.textContent = t("refreshDemo");
         tickDemo();
         return;
       }
       if (!key) {
-        apiResult.textContent = "APIキーを入力してください。";
+        apiResult.textContent = t("keyRequired");
         return;
       }
 
       const universe = companies.slice(0, 28);
-      apiResult.textContent = `${provider} から ${universe.length}銘柄を取得中...`;
+      apiResult.textContent = t("loadingProvider", provider);
       refreshButton.disabled = true;
       try {
         const next = [];
@@ -1550,7 +1762,7 @@
         state.data = [...next, ...companies.slice(28)];
         state.selected = null;
         document.getElementById("statusText").textContent = `${provider} connected`;
-        apiResult.textContent = `${next.length}銘柄を更新しました。無料枠では週次ローテーション取得が前提になります。`;
+        apiResult.textContent = t("updatedProvider", next.length);
         render();
       } catch (error) {
         apiResult.textContent = `取得できませんでした: ${error.message}`;
@@ -1567,7 +1779,7 @@
         fetch(quoteUrl).then(r => r.json()),
         fetch(profileUrl).then(r => r.json()).catch(() => ({}))
       ]);
-      if (!quote || typeof quote.c !== "number" || quote.c === 0) throw new Error(`${base.ticker} quote unavailable`);
+      if (!quote || typeof quote.c !== "number" || quote.c === 0) throw new Error(t("unavailable", base.ticker));
       const previous = quote.pc || quote.c;
       return {
         name: profile.name || base.name,
@@ -1590,7 +1802,7 @@
       const quote = quotePayload["Global Quote"] || {};
       const price = Number(quote["05. price"]);
       const change = Number(String(quote["10. change percent"] || "").replace("%", ""));
-      if (!price) throw new Error(`${base.ticker} quote unavailable or rate limited`);
+      if (!price) throw new Error(t("unavailable", base.ticker));
       return {
         name: overview.Name || base.name,
         sector: normalizeSector(overview.Sector || base.sector),
@@ -1634,6 +1846,13 @@
       render();
     });
 
+    languageButtons.querySelectorAll("button").forEach(button => {
+      button.addEventListener("click", () => {
+        state.lang = button.dataset.lang;
+        render();
+      });
+    });
+
     companyModal.addEventListener("click", event => {
       if (event.target === companyModal) closeModal();
     });
@@ -1643,7 +1862,7 @@
     });
 
     providerSelect.addEventListener("change", () => {
-      document.getElementById("statusText").textContent = providerSelect.value === "demo" ? "Weekly snapshot" : "API ready";
+      document.getElementById("statusText").textContent = providerSelect.value === "demo" ? t("weeklySnapshot") : t("apiReady");
     });
 
     refreshButton.addEventListener("click", refreshFromApi);
