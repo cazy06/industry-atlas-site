@@ -125,7 +125,7 @@
     main {
       min-height: 0;
       display: grid;
-      grid-template-columns: minmax(520px, 1fr) 340px;
+      grid-template-columns: minmax(520px, 1fr);
       gap: 14px;
       padding: 14px;
     }
@@ -589,12 +589,6 @@
       margin: 12px 0 0;
     }
 
-    .source-note {
-      border-top: 1px solid var(--line);
-      padding-top: 13px;
-      margin-top: 14px;
-    }
-
     .api-result {
       margin-top: 10px;
       font-size: 12px;
@@ -755,7 +749,8 @@
         grid-template-columns: 1fr 1fr;
       }
 
-      .filter-content .filter-metrics {
+      .filter-content .filter-metrics,
+      .filter-content .weekly-settings {
         grid-column: 1 / -1;
       }
     }
@@ -904,6 +899,30 @@
                 <div class="mini"><strong id="gainRatio">0%</strong><span data-i18n="gainRatio">上昇比率</span></div>
               </div>
             </section>
+            <section class="weekly-settings">
+              <h2>Weekly Update</h2>
+              <div class="mini-metrics">
+                <div class="mini"><strong>2026/05/12</strong><span data-i18n="lastUpdated">最終更新</span></div>
+                <div class="mini"><strong>2026/05/19</strong><span data-i18n="nextUpdate">次回予定</span></div>
+              </div>
+              <div class="field">
+                <label for="providerSelect" data-i18n="updateData">更新データ</label>
+                <select id="providerSelect">
+                  <option value="demo">Local weekly snapshot</option>
+                  <option value="finnhub">Finnhub</option>
+                  <option value="alphavantage">Alpha Vantage</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="apiKeyInput">API Key</label>
+                <input id="apiKeyInput" type="password" placeholder="ローカル検証用">
+              </div>
+              <button class="primary" id="refreshButton">
+                <span data-i18n="simulateRefresh">Simulate Weekly Refresh</span>
+              </button>
+              <p class="api-result" id="apiResult">本番では週1回の更新処理でAPIから取得し、画面は保存済みJSONを読み込みます。</p>
+              <p class="note" id="weeklyNote">無料枠で運用する場合は、Top 100を数回に分けて取得し、週次で `market-data.json` を更新する設計が現実的です。</p>
+            </section>
           </div>
         </details>
       </aside>
@@ -921,34 +940,6 @@
         <div id="heatmap" aria-label="企業ヒートマップ"></div>
       </section>
 
-      <aside class="panel detail">
-        <div id="detailPanel"></div>
-
-        <div class="source-note">
-          <h2>Weekly Update</h2>
-          <div class="mini-metrics">
-            <div class="mini"><strong>2026/05/12</strong><span data-i18n="lastUpdated">最終更新</span></div>
-            <div class="mini"><strong>2026/05/19</strong><span data-i18n="nextUpdate">次回予定</span></div>
-          </div>
-          <div class="field">
-            <label for="providerSelect" data-i18n="updateData">更新データ</label>
-            <select id="providerSelect">
-              <option value="demo">Local weekly snapshot</option>
-              <option value="finnhub">Finnhub</option>
-              <option value="alphavantage">Alpha Vantage</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="apiKeyInput">API Key</label>
-            <input id="apiKeyInput" type="password" placeholder="ローカル検証用">
-          </div>
-          <button class="primary" id="refreshButton">
-            <span data-i18n="simulateRefresh">Simulate Weekly Refresh</span>
-          </button>
-          <p class="api-result" id="apiResult">本番では週1回の更新処理でAPIから取得し、画面は保存済みJSONを読み込みます。</p>
-          <p class="note">無料枠で運用する場合は、Top 100を数回に分けて取得し、週次で `market-data.json` を更新する設計が現実的です。</p>
-        </div>
-      </aside>
     </main>
 
     <div class="modal-backdrop" id="companyModal" aria-hidden="true">
@@ -1149,7 +1140,6 @@
     const heatmap = document.getElementById("heatmap");
     const marketButtons = document.getElementById("marketButtons");
     const sectorButtons = document.getElementById("sectorButtons");
-    const detailPanel = document.getElementById("detailPanel");
     const providerSelect = document.getElementById("providerSelect");
     const apiKeyInput = document.getElementById("apiKeyInput");
     const refreshButton = document.getElementById("refreshButton");
@@ -1178,7 +1168,6 @@
         updated: "Updated",
         areaLegend: "面積: 概算時価総額",
         noCompanies: "該当する企業がありません。",
-        noData: "条件に合う企業がありません。",
         lastUpdated: "最終更新",
         nextUpdate: "次回予定",
         updateData: "更新データ",
@@ -1193,11 +1182,8 @@
         region: "地域",
         sector: "業種",
         update: "更新",
-        largestMover: "largest mover",
-        detailNote: "タイルの面積は概算時価総額、色は直近1週間の騰落率です。週次更新では終値ベースのデータを保存し、前週比として表示します。",
         modalNote: "この詳細は週次スナップショットの表示です。面積は概算時価総額、色は直近1週間の騰落率を表します。",
         sponsored: "Sponsored insight slot",
-        sideAd: "将来的に、業種・地域・選択企業に連動した広告、レポート、証券口座、ETF、調査資料などをここに表示できます。",
         modalAd: "将来的に、選択企業・業種・地域に連動する広告、調査資料、ETF、証券口座、B2Bサービスを表示できます。",
         companyDetail: "Company Detail",
         relatedOpportunity: "Related Opportunity",
@@ -1227,7 +1213,6 @@
         updated: "Updated",
         areaLegend: "Area: estimated market cap",
         noCompanies: "No companies match the current filters.",
-        noData: "No matching companies.",
         lastUpdated: "Last updated",
         nextUpdate: "Next update",
         updateData: "Update source",
@@ -1242,11 +1227,8 @@
         region: "Region",
         sector: "Sector",
         update: "Updated",
-        largestMover: "largest mover",
-        detailNote: "Tile area represents estimated market cap, and color represents one-week performance based on weekly close data.",
         modalNote: "This detail is part of the weekly snapshot. Area represents estimated market cap, and color represents one-week performance.",
         sponsored: "Sponsored insight slot",
-        sideAd: "Future placements can show ads, reports, brokerage offers, ETFs, or research materials linked to the selected sector, region, or company.",
         modalAd: "Future placements can show ads, research, ETFs, brokerage offers, or B2B services tied to the selected company, sector, and region.",
         companyDetail: "Company Detail",
         relatedOpportunity: "Related Opportunity",
@@ -1383,7 +1365,7 @@
         node.textContent = t(node.dataset.i18n);
       });
       document.getElementById("apiResult").textContent = t("apiNote");
-      document.querySelector(".source-note .note").textContent = t("freeNote");
+      document.getElementById("weeklyNote").textContent = t("freeNote");
       languageButtons.querySelectorAll("button").forEach(button => {
         button.classList.toggle("active", button.dataset.lang === state.lang);
       });
@@ -1536,35 +1518,6 @@
       document.getElementById("summaryUpdated").textContent = `${t("updated")} ${formatDate(snapshotDate)}`;
     }
 
-    function renderDetail() {
-      const item = state.selected || filteredCompanies().sort((a, b) => Math.abs(b.change) - Math.abs(a.change))[0];
-      if (!item) {
-        detailPanel.innerHTML = `<div class="detail-hero"><h2>No data</h2><p>${t("noData")}</p></div>`;
-        return;
-      }
-      detailPanel.innerHTML = `
-        <div class="detail-hero" style="background:linear-gradient(135deg,${colorForChange(item.change)},#20282f)">
-          <h2>${item.ticker}</h2>
-          <p>${item.name} / ${item.sector}${state.selected ? "" : ` / ${t("largestMover")}`}</p>
-        </div>
-        <div class="rows">
-          <div class="row"><span>${t("companyName")}</span><strong>${item.name}</strong></div>
-          <div class="row"><span>${t("weeklyChange")}</span><strong class="${item.change >= 0 ? "gain" : "loss"}">${formatChange(item.change)}</strong></div>
-          <div class="row"><span>${t("estimatedMarketCap")}</span><strong>${formatCap(item.marketCap)}</strong></div>
-          <div class="row"><span>${t("estimatedPrice")}</span><strong>$${item.price.toFixed(2)}</strong></div>
-          <div class="row"><span>${t("region")}</span><strong>${item.region}</strong></div>
-          <div class="row"><span>${t("sector")}</span><strong>${item.sector}</strong></div>
-          <div class="row"><span>${t("update")}</span><strong>${formatDate(item.updatedAt)}</strong></div>
-        </div>
-        <p class="note">${t("detailNote")}</p>
-        <div class="ad-slot">
-          <strong>${t("sponsored")}</strong>
-          <span>${adSuggestion(item)}</span>
-          <span>${t("sideAd")}</span>
-        </div>
-      `;
-    }
-
     function renderModal() {
       const item = state.selected;
       if (!state.modalOpen || !item) {
@@ -1631,7 +1584,6 @@
       renderControls();
       renderHeatmap();
       renderSnapshot();
-      renderDetail();
       renderModal();
     }
 
