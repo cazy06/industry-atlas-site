@@ -1,0 +1,1096 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>World Industry Atlas</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #65717b;
+      --line: #d9e0e5;
+      --soft: #f3f6f8;
+      --panel: #ffffff;
+      --accent: #0b6e69;
+      --accent-2: #c6532f;
+      --shadow: 0 18px 48px rgba(22, 32, 38, .10);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.88), rgba(246,248,250,.94)),
+        radial-gradient(circle at 18% 12%, rgba(11,110,105,.12), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(198,83,47,.11), transparent 26%),
+        #f6f8fa;
+      color: var(--ink);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      padding: 18px 24px 12px;
+      border-bottom: 1px solid rgba(217,224,229,.86);
+      background: rgba(255,255,255,.78);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr minmax(220px, 360px);
+      gap: 16px;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 3.2vw, 42px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 860px;
+      line-height: 1.55;
+    }
+
+    .search {
+      position: relative;
+    }
+
+    .search input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 42px 12px 14px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+      box-shadow: 0 6px 20px rgba(23,32,38,.06);
+    }
+
+    .search svg {
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      translate: 0 -50%;
+      color: #7b8790;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 290px minmax(560px, 1fr) 340px;
+      gap: 16px;
+      padding: 16px;
+      min-height: 0;
+    }
+
+    aside, .map-stage, .company-strip {
+      background: rgba(255,255,255,.9);
+      border: 1px solid rgba(217,224,229,.9);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(23,32,38,.06);
+    }
+
+    aside {
+      padding: 16px;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .panel-title {
+      margin: 0 0 12px;
+      font-size: 13px;
+      color: #43505a;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .control-group {
+      margin-bottom: 20px;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+    }
+
+    .segmented button,
+    .sector-list button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 8px;
+      min-height: 38px;
+      padding: 9px 11px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .segmented button.active,
+    .sector-list button.active {
+      border-color: rgba(11,110,105,.54);
+      background: #e8f3f1;
+      color: #073f3c;
+    }
+
+    .sector-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .sector-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+    }
+
+    .sector-name {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .sector-name span:last-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .metric-card {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfcfd;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 20px;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: minmax(470px, 1fr) 220px;
+      gap: 16px;
+    }
+
+    .map-stage {
+      position: relative;
+      overflow: hidden;
+      min-height: 470px;
+    }
+
+    #industryMap {
+      width: 100%;
+      height: 100%;
+      min-height: 470px;
+      display: block;
+      background:
+        linear-gradient(90deg, rgba(217,224,229,.45) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(217,224,229,.45) 1px, transparent 1px);
+      background-size: 42px 42px;
+    }
+
+    .map-label {
+      pointer-events: none;
+      font-size: 12px;
+      fill: #243039;
+      font-weight: 700;
+    }
+
+    .map-sub {
+      pointer-events: none;
+      font-size: 10px;
+      fill: #5f6b74;
+    }
+
+    .node {
+      cursor: pointer;
+      transition: opacity .18s ease;
+    }
+
+    .node:hover circle,
+    .node.active circle {
+      stroke-width: 3;
+      stroke: #122027;
+      filter: drop-shadow(0 8px 12px rgba(18,32,39,.25));
+    }
+
+    .node.dimmed {
+      opacity: .16;
+    }
+
+    .map-toolbar {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: calc(100% - 28px);
+    }
+
+    .legend-pill {
+      border: 1px solid rgba(217,224,229,.92);
+      background: rgba(255,255,255,.92);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: #42505a;
+      box-shadow: 0 8px 20px rgba(23,32,38,.08);
+    }
+
+    .company-strip {
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    .strip-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .strip-head h2,
+    .detail h2 {
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .company-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .company {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 11px;
+      min-height: 132px;
+      display: grid;
+      align-content: start;
+      gap: 7px;
+    }
+
+    .company strong {
+      font-size: 14px;
+      line-height: 1.15;
+    }
+
+    .company span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .company .tag {
+      justify-self: start;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      color: #122027;
+      background: #edf1f3;
+    }
+
+    .detail {
+      padding: 18px;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .detail-hero {
+      border-radius: 8px;
+      padding: 16px;
+      color: #fff;
+      min-height: 132px;
+      display: grid;
+      align-content: end;
+      margin-bottom: 14px;
+      background: var(--accent);
+    }
+
+    .detail-hero h2 {
+      font-size: 28px;
+      line-height: 1.02;
+      margin: 0;
+      color: #fff;
+    }
+
+    .detail-hero p {
+      margin: 8px 0 0;
+      color: rgba(255,255,255,.86);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .detail-section {
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+
+    .detail-section h3 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: #43505a;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .bars {
+      display: grid;
+      gap: 9px;
+    }
+
+    .bar-row {
+      display: grid;
+      gap: 5px;
+    }
+
+    .bar-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #3f4c55;
+    }
+
+    .bar-track {
+      height: 8px;
+      border-radius: 999px;
+      background: #e8edf0;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-size: 12px;
+      background: #fff;
+      color: #3f4c55;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 1180px) {
+      main {
+        grid-template-columns: 250px 1fr;
+      }
+
+      .detail {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 820px) {
+      header {
+        padding: 16px;
+      }
+
+      .topbar,
+      main,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        padding: 10px;
+      }
+
+      .workspace {
+        grid-template-rows: auto auto;
+      }
+
+      .map-stage,
+      #industryMap {
+        min-height: 560px;
+      }
+
+      .company-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 520px) {
+      .company-grid,
+      .metric-card {
+        grid-template-columns: 1fr;
+      }
+
+      .map-stage,
+      #industryMap {
+        min-height: 620px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="topbar">
+        <div>
+          <h1>World Industry Atlas</h1>
+          <p class="subtitle">世界の産業を、経済規模、資本集約度、成長性、地域性、企業例で俯瞰するためのプロトタイプ。企業別の市場ヒートマップは <a href="company-heatmap.html">Company Heatmap</a> で確認できます。</p>
+        </div>
+        <label class="search" aria-label="検索">
+          <input id="searchInput" type="search" placeholder="業種・企業・地域を検索">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m21 21-4.35-4.35m2.35-5.15a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </label>
+      </div>
+    </header>
+
+    <main>
+      <aside>
+        <section class="control-group">
+          <h2 class="panel-title">View</h2>
+          <div class="segmented" id="viewButtons"></div>
+        </section>
+
+        <section class="control-group">
+          <h2 class="panel-title">Sectors</h2>
+          <div class="sector-list" id="sectorButtons"></div>
+        </section>
+
+        <section class="control-group">
+          <h2 class="panel-title">Snapshot</h2>
+          <div class="metric-card">
+            <div class="metric"><strong id="sectorCount">0</strong><span>表示セクター</span></div>
+            <div class="metric"><strong id="companyCount">0</strong><span>企業例</span></div>
+            <div class="metric"><strong id="scaleIndex">0</strong><span>規模指数</span></div>
+            <div class="metric"><strong id="regionCount">0</strong><span>主要地域</span></div>
+          </div>
+        </section>
+
+        <p class="note">規模値は公開統計に接続する前の相対インデックス。初期設計では世界産業の位置関係と分類体験を優先しています。</p>
+      </aside>
+
+      <section class="workspace">
+        <div class="map-stage">
+          <svg id="industryMap" role="img" aria-label="世界産業マップ"></svg>
+          <div class="map-toolbar" id="legend"></div>
+        </div>
+        <section class="company-strip">
+          <div class="strip-head">
+            <h2>Representative Companies</h2>
+            <span class="note" id="companyScope">All sectors</span>
+          </div>
+          <div class="company-grid" id="companyGrid"></div>
+        </section>
+      </section>
+
+      <aside class="detail" id="detailPanel"></aside>
+    </main>
+  </div>
+
+  <script>
+    const sectors = [
+      {
+        id: "technology",
+        name: "Technology",
+        jp: "テクノロジー",
+        color: "#2b7bbb",
+        scale: 98,
+        growth: 94,
+        capital: 62,
+        concentration: 86,
+        regions: ["北米", "東アジア", "欧州", "インド"],
+        clusters: [
+          ["Cloud & AI", 96, ["Microsoft", "Amazon", "Alphabet", "NVIDIA"]],
+          ["Semiconductors", 88, ["TSMC", "NVIDIA", "ASML", "Samsung"]],
+          ["Enterprise Software", 74, ["SAP", "Oracle", "Salesforce", "Adobe"]],
+          ["Consumer Platforms", 82, ["Apple", "Meta", "Tencent", "ByteDance"]]
+        ],
+        description: "データ、計算資源、半導体、ソフトウェアが結びつき、他産業の生産性を左右する基盤産業。"
+      },
+      {
+        id: "finance",
+        name: "Finance",
+        jp: "金融",
+        color: "#347a4a",
+        scale: 91,
+        growth: 61,
+        capital: 75,
+        concentration: 72,
+        regions: ["北米", "欧州", "東アジア", "中東"],
+        clusters: [
+          ["Banking", 86, ["JPMorgan Chase", "ICBC", "HSBC", "Mitsubishi UFJ"]],
+          ["Payments", 62, ["Visa", "Mastercard", "PayPal", "Adyen"]],
+          ["Insurance", 68, ["Allianz", "AXA", "Ping An", "UnitedHealth"]],
+          ["Asset Management", 72, ["BlackRock", "Vanguard", "UBS", "Fidelity"]]
+        ],
+        description: "信用、決済、保険、投資を通じて世界の資本配分を支える巨大なサービス産業。"
+      },
+      {
+        id: "healthcare",
+        name: "Healthcare",
+        jp: "ヘルスケア",
+        color: "#b94163",
+        scale: 87,
+        growth: 72,
+        capital: 64,
+        concentration: 68,
+        regions: ["北米", "欧州", "日本", "中国"],
+        clusters: [
+          ["Pharma", 82, ["Eli Lilly", "Novo Nordisk", "Roche", "Pfizer"]],
+          ["Medical Devices", 62, ["Medtronic", "Stryker", "Siemens Healthineers", "Olympus"]],
+          ["Care Providers", 76, ["UnitedHealth", "HCA Healthcare", "Fresenius", "CVS Health"]],
+          ["Biotech", 56, ["Amgen", "Gilead", "Regeneron", "Moderna"]]
+        ],
+        description: "高齢化、慢性疾患、創薬技術の進展によって需要が継続しやすい生活インフラ産業。"
+      },
+      {
+        id: "energy",
+        name: "Energy",
+        jp: "エネルギー",
+        color: "#d4762d",
+        scale: 93,
+        growth: 55,
+        capital: 92,
+        concentration: 64,
+        regions: ["中東", "北米", "中国", "欧州"],
+        clusters: [
+          ["Oil & Gas", 94, ["Saudi Aramco", "ExxonMobil", "Shell", "TotalEnergies"]],
+          ["Renewables", 58, ["NextEra Energy", "Iberdrola", "Enel", "LONGi"]],
+          ["Utilities", 70, ["State Grid", "EDF", "Duke Energy", "E.ON"]],
+          ["Energy Equipment", 48, ["Schneider Electric", "Siemens Energy", "Vestas", "GE Vernova"]]
+        ],
+        description: "化石燃料、電力、再生可能エネルギー、送配電が社会と産業の制約条件を決める。"
+      },
+      {
+        id: "consumer",
+        name: "Consumer",
+        jp: "消費財・小売",
+        color: "#8a6f22",
+        scale: 89,
+        growth: 58,
+        capital: 43,
+        concentration: 59,
+        regions: ["北米", "欧州", "中国", "東南アジア"],
+        clusters: [
+          ["Retail", 91, ["Walmart", "Amazon", "Costco", "Alibaba"]],
+          ["Food & Beverage", 73, ["Nestle", "Coca-Cola", "PepsiCo", "Unilever"]],
+          ["Luxury & Apparel", 54, ["LVMH", "Nike", "Inditex", "Hermes"]],
+          ["Household Goods", 50, ["Procter & Gamble", "Reckitt", "Kao", "Colgate-Palmolive"]]
+        ],
+        description: "生活者の購買行動、ブランド、流通網、価格帯の設計が収益力を左右する広範な産業群。"
+      },
+      {
+        id: "industrial",
+        name: "Industrial",
+        jp: "製造・産業財",
+        color: "#6b6f76",
+        scale: 84,
+        growth: 52,
+        capital: 78,
+        concentration: 48,
+        regions: ["中国", "欧州", "日本", "北米"],
+        clusters: [
+          ["Machinery", 68, ["Caterpillar", "Komatsu", "Deere", "Hitachi"]],
+          ["Automation", 61, ["Siemens", "ABB", "Rockwell Automation", "Keyence"]],
+          ["Aerospace", 58, ["Airbus", "Boeing", "Safran", "RTX"]],
+          ["Logistics", 64, ["DHL", "Maersk", "UPS", "FedEx"]]
+        ],
+        description: "機械、航空、物流、自動化など、他産業の物理的な生産能力を構成する領域。"
+      },
+      {
+        id: "materials",
+        name: "Materials",
+        jp: "素材",
+        color: "#7f5aa8",
+        scale: 72,
+        growth: 43,
+        capital: 84,
+        concentration: 45,
+        regions: ["中国", "豪州", "南米", "欧州"],
+        clusters: [
+          ["Metals & Mining", 74, ["BHP", "Rio Tinto", "Vale", "Glencore"]],
+          ["Chemicals", 66, ["BASF", "Dow", "SABIC", "Mitsubishi Chemical"]],
+          ["Steel", 58, ["ArcelorMittal", "Nippon Steel", "Baowu", "POSCO"]],
+          ["Building Materials", 49, ["Holcim", "CRH", "Saint-Gobain", "Cemex"]]
+        ],
+        description: "鉱物、金属、化学品、建材を供給し、インフラと製造業の原材料制約を形づくる。"
+      },
+      {
+        id: "mobility",
+        name: "Mobility",
+        jp: "モビリティ",
+        color: "#c64f46",
+        scale: 80,
+        growth: 65,
+        capital: 79,
+        concentration: 60,
+        regions: ["中国", "欧州", "日本", "北米"],
+        clusters: [
+          ["Automakers", 82, ["Toyota", "Tesla", "Volkswagen", "BYD"]],
+          ["Auto Parts", 60, ["Bosch", "Denso", "Magna", "Continental"]],
+          ["Rail & Transit", 44, ["CRRC", "Alstom", "Hitachi Rail", "Siemens Mobility"]],
+          ["Mobility Platforms", 50, ["Uber", "Didi", "Grab", "Lyft"]]
+        ],
+        description: "自動車、鉄道、部品、移動プラットフォームが電動化とソフトウェア化で再編されている。"
+      },
+      {
+        id: "communication",
+        name: "Communication",
+        jp: "通信・メディア",
+        color: "#20818c",
+        scale: 76,
+        growth: 57,
+        capital: 71,
+        concentration: 71,
+        regions: ["北米", "中国", "欧州", "韓国"],
+        clusters: [
+          ["Telecom", 72, ["China Mobile", "Verizon", "Deutsche Telekom", "NTT"]],
+          ["Streaming & Content", 54, ["Netflix", "Disney", "Comcast", "Sony"]],
+          ["Gaming", 47, ["Tencent", "Sony", "Nintendo", "Electronic Arts"]],
+          ["Connectivity Equipment", 55, ["Huawei", "Cisco", "Ericsson", "Nokia"]]
+        ],
+        description: "通信ネットワーク、コンテンツ、広告、ゲームが注意と接続をめぐって競争する。"
+      },
+      {
+        id: "realestate",
+        name: "Real Estate",
+        jp: "不動産・建設",
+        color: "#9d5b3d",
+        scale: 78,
+        growth: 38,
+        capital: 88,
+        concentration: 35,
+        regions: ["中国", "北米", "欧州", "中東"],
+        clusters: [
+          ["Property", 66, ["Prologis", "Mitsui Fudosan", "Vonovia", "Emaar"]],
+          ["Construction", 72, ["Vinci", "ACS", "China State Construction", "Bechtel"]],
+          ["Infrastructure", 63, ["Brookfield", "Ferrovial", "Macquarie", "Aena"]],
+          ["Data Centers", 44, ["Equinix", "Digital Realty", "NTT GDC", "GDS"]]
+        ],
+        description: "土地、建物、都市インフラを扱い、金融条件と人口動態の影響を強く受ける。"
+      },
+      {
+        id: "agriculture",
+        name: "Agriculture",
+        jp: "農業・食料",
+        color: "#5b8f3a",
+        scale: 70,
+        growth: 42,
+        capital: 47,
+        concentration: 42,
+        regions: ["北米", "南米", "中国", "インド"],
+        clusters: [
+          ["Agribusiness", 64, ["Cargill", "ADM", "Bunge", "COFCO"]],
+          ["Seeds & Crop Science", 48, ["Bayer Crop Science", "Corteva", "Syngenta", "BASF"]],
+          ["Protein", 56, ["JBS", "Tyson Foods", "WH Group", "Marfrig"]],
+          ["Farm Equipment", 42, ["Deere", "CNH Industrial", "AGCO", "Kubota"]]
+        ],
+        description: "食料供給、農地、肥料、種子、流通が結びつく基礎産業。気候と地政学の影響が大きい。"
+      }
+    ];
+
+    const views = [
+      { id: "scale", label: "経済規模", metric: "scale" },
+      { id: "growth", label: "成長性", metric: "growth" },
+      { id: "capital", label: "資本集約度", metric: "capital" },
+      { id: "concentration", label: "企業集中度", metric: "concentration" }
+    ];
+
+    let activeView = "scale";
+    let activeSector = "all";
+    let activeNode = null;
+    let searchTerm = "";
+
+    const svg = document.getElementById("industryMap");
+    const viewButtons = document.getElementById("viewButtons");
+    const sectorButtons = document.getElementById("sectorButtons");
+    const detailPanel = document.getElementById("detailPanel");
+    const companyGrid = document.getElementById("companyGrid");
+    const legend = document.getElementById("legend");
+    const searchInput = document.getElementById("searchInput");
+
+    function metricValue(sector) {
+      return sector[views.find(view => view.id === activeView).metric];
+    }
+
+    function filteredSectors() {
+      const term = searchTerm.trim().toLowerCase();
+      return sectors.filter(sector => {
+        const inSector = activeSector === "all" || sector.id === activeSector;
+        if (!inSector) return false;
+        if (!term) return true;
+        const haystack = [
+          sector.name, sector.jp, sector.description, ...sector.regions,
+          ...sector.clusters.flatMap(cluster => [cluster[0], ...cluster[2]])
+        ].join(" ").toLowerCase();
+        return haystack.includes(term);
+      });
+    }
+
+    function allCompanies(list) {
+      return list.flatMap(sector => sector.clusters.flatMap(cluster =>
+        cluster[2].map(company => ({
+          name: company,
+          cluster: cluster[0],
+          sector: sector.jp,
+          color: sector.color,
+          scale: cluster[1],
+          region: sector.regions[0]
+        }))
+      ));
+    }
+
+    function renderControls() {
+      viewButtons.innerHTML = views.map(view => `
+        <button class="${view.id === activeView ? "active" : ""}" data-view="${view.id}">
+          <span>${view.label}</span>
+          <span>${view.metric}</span>
+        </button>
+      `).join("");
+
+      sectorButtons.innerHTML = `
+        <button class="${activeSector === "all" ? "active" : ""}" data-sector="all">
+          <span class="sector-name"><span class="sector-dot" style="background:#172026"></span><span>All Industries</span></span>
+          <span>${sectors.length}</span>
+        </button>
+        ${sectors.map(sector => `
+          <button class="${activeSector === sector.id ? "active" : ""}" data-sector="${sector.id}">
+            <span class="sector-name"><span class="sector-dot" style="background:${sector.color}"></span><span>${sector.jp}</span></span>
+            <span>${sector.scale}</span>
+          </button>
+        `).join("")}
+      `;
+
+      viewButtons.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", () => {
+          activeView = button.dataset.view;
+          activeNode = null;
+          render();
+        });
+      });
+
+      sectorButtons.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", () => {
+          activeSector = button.dataset.sector;
+          activeNode = activeSector === "all" ? null : sectors.find(s => s.id === activeSector);
+          render();
+        });
+      });
+    }
+
+    function renderMap() {
+      const list = filteredSectors();
+      const box = svg.getBoundingClientRect();
+      const width = Math.max(560, box.width || 900);
+      const height = Math.max(470, box.height || 560);
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const orbit = Math.min(width, height) * (list.length > 4 ? 0.31 : 0.22);
+
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      svg.innerHTML = "";
+
+      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+      defs.innerHTML = `
+        <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#172026" flood-opacity=".16"/>
+        </filter>
+      `;
+      svg.appendChild(defs);
+
+      const rings = [0.18, 0.32, 0.46].map((ratio, index) => {
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", centerX);
+        circle.setAttribute("cy", centerY);
+        circle.setAttribute("r", Math.min(width, height) * ratio);
+        circle.setAttribute("fill", "none");
+        circle.setAttribute("stroke", index === 1 ? "#cdd6dc" : "#e4e9ed");
+        circle.setAttribute("stroke-dasharray", index === 1 ? "0" : "5 8");
+        svg.appendChild(circle);
+      });
+
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      title.setAttribute("x", centerX);
+      title.setAttribute("y", centerY - 10);
+      title.setAttribute("text-anchor", "middle");
+      title.setAttribute("font-size", Math.min(width, 900) < 680 ? "22" : "30");
+      title.setAttribute("font-weight", "800");
+      title.setAttribute("fill", "#172026");
+      title.textContent = views.find(view => view.id === activeView).label;
+      svg.appendChild(title);
+
+      const sub = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      sub.setAttribute("x", centerX);
+      sub.setAttribute("y", centerY + 18);
+      sub.setAttribute("text-anchor", "middle");
+      sub.setAttribute("font-size", "12");
+      sub.setAttribute("fill", "#65717b");
+      sub.textContent = activeSector === "all" ? "Global Industry System" : sectors.find(s => s.id === activeSector)?.jp || "Filtered";
+      svg.appendChild(sub);
+
+      list.forEach((sector, index) => {
+        const angle = (-90 + index * 360 / Math.max(1, list.length)) * Math.PI / 180;
+        const radius = 26 + metricValue(sector) * 0.48;
+        const x = list.length === 1 ? centerX : centerX + Math.cos(angle) * orbit;
+        const y = list.length === 1 ? centerY : centerY + Math.sin(angle) * orbit;
+        const node = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const isActive = activeNode?.id === sector.id;
+        node.setAttribute("class", `node ${isActive ? "active" : ""}`);
+        node.setAttribute("data-sector", sector.id);
+
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", x);
+        circle.setAttribute("cy", y);
+        circle.setAttribute("r", radius);
+        circle.setAttribute("fill", sector.color);
+        circle.setAttribute("fill-opacity", ".88");
+        circle.setAttribute("stroke", "#fff");
+        circle.setAttribute("stroke-width", "2");
+        circle.setAttribute("filter", "url(#softShadow)");
+        node.appendChild(circle);
+
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("x", x);
+        label.setAttribute("y", y - 3);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("class", "map-label");
+        label.textContent = sector.jp;
+        node.appendChild(label);
+
+        const metric = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        metric.setAttribute("x", x);
+        metric.setAttribute("y", y + 15);
+        metric.setAttribute("text-anchor", "middle");
+        metric.setAttribute("class", "map-sub");
+        metric.textContent = metricValue(sector);
+        node.appendChild(metric);
+
+        sector.clusters.forEach((cluster, clusterIndex) => {
+          const clusterAngle = (clusterIndex * 90 - 45) * Math.PI / 180;
+          const cx = x + Math.cos(clusterAngle) * (radius + 15);
+          const cy = y + Math.sin(clusterAngle) * (radius + 15);
+          const mini = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          mini.setAttribute("cx", cx);
+          mini.setAttribute("cy", cy);
+          mini.setAttribute("r", 5 + cluster[1] * 0.055);
+          mini.setAttribute("fill", "#fff");
+          mini.setAttribute("stroke", sector.color);
+          mini.setAttribute("stroke-width", "2");
+          mini.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "title")).textContent = cluster[0];
+          node.appendChild(mini);
+        });
+
+        node.addEventListener("click", () => {
+          activeNode = sector;
+          activeSector = sector.id;
+          render();
+        });
+        svg.appendChild(node);
+      });
+
+      if (!list.length) {
+        const empty = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        empty.setAttribute("x", centerX);
+        empty.setAttribute("y", centerY + 56);
+        empty.setAttribute("text-anchor", "middle");
+        empty.setAttribute("font-size", "14");
+        empty.setAttribute("fill", "#65717b");
+        empty.textContent = "該当する産業・企業がありません";
+        svg.appendChild(empty);
+      }
+    }
+
+    function renderLegend() {
+      const view = views.find(item => item.id === activeView);
+      legend.innerHTML = [
+        `<span class="legend-pill">円の大きさ: ${view.label}</span>`,
+        `<span class="legend-pill">小円: サブ業種</span>`,
+        `<span class="legend-pill">色: 産業セクター</span>`
+      ].join("");
+    }
+
+    function renderCompanies() {
+      const list = filteredSectors();
+      const companies = allCompanies(list)
+        .sort((a, b) => b.scale - a.scale)
+        .slice(0, 8);
+      document.getElementById("companyScope").textContent = activeSector === "all" ? "All sectors" : sectors.find(s => s.id === activeSector)?.jp || "Filtered";
+      companyGrid.innerHTML = companies.length ? companies.map(company => `
+        <article class="company">
+          <span class="tag" style="background:${company.color}22">${company.sector}</span>
+          <strong>${company.name}</strong>
+          <span>${company.cluster}</span>
+          <span>${company.region} / scale ${company.scale}</span>
+        </article>
+      `).join("") : `<div class="empty">該当する企業例がありません。</div>`;
+    }
+
+    function renderDetail() {
+      const visibleSectors = filteredSectors();
+      const sector = activeNode
+        || (activeSector !== "all" ? sectors.find(s => s.id === activeSector) : null)
+        || (searchTerm.trim() && visibleSectors.length === 1 ? visibleSectors[0] : null);
+      if (!sector) {
+        const strongest = [...(visibleSectors.length ? visibleSectors : sectors)]
+          .sort((a, b) => metricValue(b) - metricValue(a))
+          .slice(0, 5);
+        detailPanel.innerHTML = `
+          <div class="detail-hero" style="background:linear-gradient(135deg,#172026,#0b6e69)">
+            <h2>産業全体マップ</h2>
+            <p>11の大分類から、主要サブ業種、地域分布、代表企業を横断して把握できます。</p>
+          </div>
+          <section class="detail-section">
+            <h3>Top by Current View</h3>
+            <div class="bars">
+              ${strongest.map(item => bar(item.jp, metricValue(item), item.color)).join("")}
+            </div>
+          </section>
+          <section class="detail-section">
+            <h3>Design Direction</h3>
+            <p class="note">次の段階では、世界銀行、OECD、IMF、企業財務データ、市場時価総額データなどを接続し、年次比較と地域別ドリルダウンを追加できます。</p>
+          </section>
+        `;
+        return;
+      }
+
+      detailPanel.innerHTML = `
+        <div class="detail-hero" style="background:linear-gradient(135deg,${sector.color},#172026)">
+          <h2>${sector.jp}</h2>
+          <p>${sector.description}</p>
+        </div>
+        <section class="detail-section">
+          <h3>Metrics</h3>
+          <div class="bars">
+            ${bar("経済規模", sector.scale, sector.color)}
+            ${bar("成長性", sector.growth, sector.color)}
+            ${bar("資本集約度", sector.capital, sector.color)}
+            ${bar("企業集中度", sector.concentration, sector.color)}
+          </div>
+        </section>
+        <section class="detail-section">
+          <h3>Sub Industries</h3>
+          <div class="bars">
+            ${sector.clusters.map(cluster => bar(cluster[0], cluster[1], sector.color)).join("")}
+          </div>
+        </section>
+        <section class="detail-section">
+          <h3>Regions</h3>
+          <div class="chips">${sector.regions.map(region => `<span class="chip">${region}</span>`).join("")}</div>
+        </section>
+        <section class="detail-section">
+          <h3>Companies</h3>
+          <div class="chips">${sector.clusters.flatMap(cluster => cluster[2]).slice(0, 12).map(company => `<span class="chip">${company}</span>`).join("")}</div>
+        </section>
+      `;
+    }
+
+    function bar(label, value, color) {
+      return `
+        <div class="bar-row">
+          <div class="bar-top"><span>${label}</span><span>${value}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${value}%;background:${color}"></div></div>
+        </div>
+      `;
+    }
+
+    function renderSnapshot() {
+      const list = filteredSectors();
+      const companies = allCompanies(list);
+      const regions = new Set(list.flatMap(sector => sector.regions));
+      const scale = list.reduce((sum, sector) => sum + metricValue(sector), 0);
+      document.getElementById("sectorCount").textContent = list.length;
+      document.getElementById("companyCount").textContent = companies.length;
+      document.getElementById("scaleIndex").textContent = scale;
+      document.getElementById("regionCount").textContent = regions.size;
+    }
+
+    function render() {
+      renderControls();
+      renderMap();
+      renderLegend();
+      renderCompanies();
+      renderDetail();
+      renderSnapshot();
+    }
+
+    searchInput.addEventListener("input", event => {
+      searchTerm = event.target.value;
+      activeNode = null;
+      activeSector = searchTerm.trim() ? "all" : activeSector;
+      render();
+    });
+
+    window.addEventListener("resize", () => {
+      window.requestAnimationFrame(renderMap);
+    });
+
+    render();
+  </script>
+</body>
+</html>
