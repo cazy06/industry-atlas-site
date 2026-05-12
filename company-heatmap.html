@@ -388,13 +388,13 @@
     .tile {
       position: absolute;
       border: 1px solid rgba(255,255,255,.22);
-      overflow: hidden;
+      overflow: visible;
       color: #fff;
       display: grid;
       align-content: center;
       justify-items: center;
       text-align: center;
-      padding: 5px;
+      padding: 0;
       cursor: pointer;
       transition: transform .12s ease, border-color .12s ease, filter .12s ease;
     }
@@ -405,6 +405,35 @@
       border-color: #fff;
       z-index: 3;
       filter: brightness(1.08);
+    }
+
+    .tile-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      translate: -50% -50%;
+      width: max-content;
+      max-width: min(220px, max(100%, 120px));
+      z-index: 4;
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      padding: 6px 8px;
+      border-radius: 7px;
+      background: rgba(13, 20, 25, .64);
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
+      text-shadow: 0 1px 2px rgba(0,0,0,.45);
+      pointer-events: none;
+    }
+
+    .tile.compact .tile-label {
+      max-width: 150px;
+      padding: 5px 7px;
+    }
+
+    .tile.micro .tile-label {
+      max-width: 128px;
+      padding: 4px 6px;
     }
 
     .tile .ticker {
@@ -758,7 +787,7 @@
         justify-items: center;
         text-align: center;
         align-content: center;
-        padding: 4px;
+        padding: 0;
       }
 
       .tile:hover,
@@ -1273,21 +1302,24 @@
         rects.forEach(rect => {
           const item = rect.item;
           const tile = document.createElement("button");
-          tile.className = `tile ${state.selected?.ticker === item.ticker ? "active" : ""}`;
+          const area = rect.w * rect.h;
+          const large = area > (columns === 1 ? 11000 : 17000);
+          const medium = area > (columns === 1 ? 4400 : 6500);
+          const micro = area < (columns === 1 ? 1300 : 1800);
+          const compact = area < (columns === 1 ? 3600 : 5200);
+          tile.className = `tile ${compact ? "compact" : ""} ${micro ? "micro" : ""} ${state.selected?.ticker === item.ticker ? "active" : ""}`;
           tile.style.left = `${rect.x}px`;
           tile.style.top = `${rect.y}px`;
           tile.style.width = `${Math.max(0, rect.w)}px`;
           tile.style.height = `${Math.max(0, rect.h)}px`;
           tile.style.background = colorForChange(item.change);
           tile.style.borderColor = `${sectorColors[item.sector]}aa`;
-          const area = rect.w * rect.h;
-          const large = area > (columns === 1 ? 11000 : 17000);
-          const medium = area > (columns === 1 ? 4400 : 6500);
-          const tiny = area < (columns === 1 ? 1500 : 2200);
           tile.innerHTML = `
-            <div class="ticker" style="font-size:${large ? 19 : medium ? 14 : 10}px">${item.ticker}</div>
-            ${tiny ? "" : `<div class="company-name" style="font-size:${large ? 12 : 9}px">${item.name}</div>`}
-            <div class="change" style="font-size:${large ? 16 : medium ? 12 : 9}px">${formatChange(item.change)}</div>
+            <div class="tile-label">
+              <div class="ticker" style="font-size:${large ? 19 : medium ? 14 : 11}px">${item.ticker}</div>
+              <div class="company-name" style="font-size:${large ? 12 : 10}px">${item.name}</div>
+              <div class="change" style="font-size:${large ? 16 : medium ? 12 : 10}px">${formatChange(item.change)}</div>
+            </div>
           `;
           tile.title = `${item.name} ${formatChange(item.change)} / ${formatCap(item.marketCap)}`;
           tile.addEventListener("click", () => {
